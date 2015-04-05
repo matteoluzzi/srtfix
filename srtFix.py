@@ -3,35 +3,35 @@
 import sys
 import os
 import re
-from Tkinter import *
-from tkFileDialog import askopenfilename
+import argparse
 
 
 def fixFile(filepath, offset):
+
+		print "Goint to modify the time of " + filepath + " by this offset " + offset + "\n"
+
 		with open(filepath, 'r') as input:
 			with open(createOutputFileName(filepath), 'w') as output:
 				file = input.read()
 				off = parseOffset(offset)
 				blocks = file.split("\n")
 				for line in blocks:
-					print line
+					#print line
 					if keyStructure(line):
 							start, end = line.split(" --> ")
-							print "off, ", off
+							#print "off, ", off
 							newStart = modifyTime(start, off)
 							newEnd = modifyTime(end, off)
-							print newStart, newEnd
+							#print newStart, newEnd
 							output.write(formatTime(newStart) + " --> " + formatTime(newEnd) + "\n")
 					else:
 						output.write(line + "\n")
-		return createOutputFileName(filepath)
-
-
+		#return createOutputFileName(filepath)
+		print "conversion completed! the output file is " + createOutputFileName(filepath)
 
 
 def createOutputFileName(inputPath):
 	head, tail = os.path.splitext(inputPath)
-	print head + "_fixed" + tail
 	return head + "_fixed" + tail
 
 def keyStructure(str):
@@ -198,12 +198,6 @@ def print_error(err_type):
 	elif err_type == 4:
 		print "Offset is bigger than starting time, " + appendix
 			
-		
-
-def printInstructions():
-	print "Usage: strFix 'filename' 'offset'\nwhere 'filename' must be a valid path to a .str or .txt file and 'offset' must be in the form +xxhxxmxxsxxxms to add time or -xxhxxmxxsxxxms to subtract time (x it's a [0-9] digit)"
-	print "For any information contact matteo(dot)luzzi(at)gmail(dot)com"			
-
 class Error:
 
 	ARGUMENTS = 1
@@ -211,165 +205,28 @@ class Error:
 	FILENAME = 3
 	SUBTRACTION = 4
 
-class GUI:
-
-	def __init__(self, master):
-
-		self.main_frame = Frame(master)
-		self.main_frame.pack()
-
-		self.filename = ""
-		self.offset = ""
-
-		self.file_opts = {}
-		self.file_opts['filetypes'] = [('srt files', '*.srt')]
-
-
-		# self.load_button = Button(self.main_frame, text="Load sub file", command=self.openfile)
-		# self.load_button.grid(row=0, column=1)
-
-		# self.textArea = Text(self.main_frame)
-		# self.textArea.grid(row=1, column=2)
-
-		# self.offset_frame = Frame(self.main_frame)
-		# self.offset_frame.grid(row=0, column=2)
-
-		# self.execute_button = Button(self.main_frame, text="Execute", command=self.execute)
-		# self.execute_button.grid(row=0, column=3)
-		
-		self.inputFileTextArea = Text(self.main_frame)
-		self.inputFileTextArea.grid(row=0, column=1)
-
-		self.outputFileTextArea = Text(self.main_frame)
-		self.outputFileTextArea.grid(row=0, column=2)
-
-		# self.direction = Spinbox(self.offset_frame, values=("+", "-"))
-		# self.direction.pack()
-
-		# self.hh_label = Label(self.offset_frame, text="H offset")
-		# self.hh_label.pack()
-
-		# self.hh_offset = Spinbox(self.offset_frame, from_=0, to = 99)
-		# self.hh_offset.pack()
-
-		# self.hh_label = Label(self.offset_frame, text="M offset")
-		# self.hh_label.pack()
-
-		# self.mm_offset = Spinbox(self.offset_frame, from_=0, to = 99)
-		# self.mm_offset.pack()
-
-		# self.hh_label = Label(self.offset_frame, text="S offset")
-		# self.hh_label.pack()
-
-		# self.ss_offset = Spinbox(self.offset_frame, from_=0, to = 99)
-		# self.ss_offset.pack()
-
-		# self.hh_label = Label(self.offset_frame, text="MS offset")
-		# self.hh_label.pack()
-
-		# self.ms_offset = Spinbox(self.offset_frame, from_=0, to = 999)
-		# self.ms_offset.pack()
-		
-
-	def createOffset(self):
-	
-		offset = self.direction.get()
-		if len(self.hh_offset.get()) < 2:
-			offset +=  "0" + self.hh_offset.get()
-		else:
-			offset += self.hh_offset.get()
-		if len(self.mm_offset.get()) < 2:
-			offset +=  "h0" + self.mm_offset.get()
-		else:
-			offset += "h" + self.mm_offset.get()
-		if len(self.ss_offset.get()) < 2:
-			offset +=  "m0" + self.ss_offset.get()
-		else:
-			offset += "m" + self.ss_offset.get()
-		if len(self.ms_offset.get()) == 1:
-			offset +=  "s00" + self.ss_offset.get()
-		elif len(self.ms_offset.get()) == 2:
-			offset +=  "s0" + self.ss_offset.get()
-		else:
-			offset += "s" + self.ms_offset.get()
-		offset += "ms"
-
-
-
-		if validateOffset(offset):	
-			return offset
-		else:
-			print offset
-			exit()
-			
-
-
-	def openfile(self):
-
-		filename = askopenfilename(**self.file_opts)
-		self.textArea.insert(INSERT, filename + " loaded\n")
-		self.filename = filename
-
-		f = open(self.filename, 'r')
-
-		text = f.read()
-		self.inputFileTextArea.insert(INSERT, text)
-
-		print self.filename
-
-	def execute(self):
-
-		self.offset = self.createOffset()
-
-		print self.offset
-		if self.filename == "":
-			self.textArea.insert(INSERT, "Aborted! missing filepath\n")
-
-		else:
-			outFile = fixFile(self.filename, self.offset)
-			self.textArea.insert(INSERT, "Success! file fixed!\n")
-			text = open(outFile, 'r').read()
-			self.outputFileTextArea.insert(INSERT, text)
-
-
-
-
-
-
 if __name__ == "__main__":
 
-	# root = Tk()
-	# root.title("strFix")
 
-	# app = GUI(root)
+	parser = argparse.ArgumentParser()
 
+	
+	parser.add_argument("filename", help="valid path to the .srt or .txt file to modify")
+	parser.add_argument("offset", help="valid offset written in the form of +xxhxxmxxsxxxms to add time or -xxhxxmxxsxxxms to subtract time (x it's a [0-9] digit)")
+	args = parser.parse_args()
+    
+	filename = args.filename
+	offset = args.offset
 
+	if not validateOffset(offset):
+		print_error(Error.OFFSET)
+ 		exit()
 
-	# root.mainloop()
-	if len(sys.argv) == 3: 
-
-		filename = sys.argv[1]
-		offset = sys.argv[2]
-
-		if not validateOffset(offset):
-			print_error(Error.OFFSET)
-			exit()
-
-		if os.path.isfile(filename):
-			fixFile(filename, offset)
-		else:
-			print_error(Error.FILENAME)
-
-	elif len(sys.argv) == 2 and sys.argv[1] == "-h":
-		
-		printInstructions()
-		exit()
-
-	else:
-		
-		print_error(Error.ARGUMENTS)
-		exit()
-
+	if os.path.isfile(filename):
+ 		fixFile(filename, offset)
+ 	else:
+ 		print_error(Error.FILENAME)
+ 		exit()
 
 
 
